@@ -130,15 +130,68 @@ load_data()
 # 4. BUILD THE AGENTS
 # ==========================================
 
-llm_agent1 = ChatOpenAI(
-    model=LLM_MODEL,
-    temperature=0.3
-)
+import torch
 
-llm_agent2 = ChatOpenAI(
-    model=LLM_MODEL,
-    temperature=0.0
-)
+if torch.cuda.is_available():
+    print("🚀 GPU detected, loading Gemma 4-bit...")
+    from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline, BitsAndBytesConfig
+    from langchain_huggingface import HuggingFacePipeline, ChatHuggingFace
+
+    model_id = "google/gemma-4-26B-A4B-it"
+
+    # 1. Configure 4-bit quantization
+    quant_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_use_double_quant=True,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_compute_dtype=torch.bfloat16
+    )
+
+    # 2. Load the model with the config
+    model = AutoModelForCausalLM.from_pretrained(
+        model_id,
+        quantization_config=quant_config,
+        device_map="auto",
+        torch_dtype=torch.bfloat16
+    )
+
+    # 3. Load the tokenizer
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
+
+    # 4. Wrap for LangChain Agent 1
+    pipe1 = pipeline(
+        "text-generation",
+        model=model,
+        tokenizer=tokenizer,
+        max_new_tokens=1024,
+        do_sample=True,
+        temperature=0.3
+    )
+    llm1 = HuggingFacePipeline(pipeline=pipe1)
+    llm_agent1 = ChatHuggingFace(llm=llm1)
+
+    # 5. Wrap for LangChain Agent 2
+    pipe2 = pipeline(
+        "text-generation",
+        model=model,
+        tokenizer=tokenizer,
+        max_new_tokens=1024,
+        do_sample=False
+    )
+    llm2 = HuggingFacePipeline(pipeline=pipe2)
+    llm_agent2 = ChatHuggingFace(llm=llm2)
+
+else:
+    print("⏳ CPU detected, loading GPT from .env...")
+    llm_agent1 = ChatOpenAI(
+        model=LLM_MODEL,
+        temperature=0.3
+    )
+
+    llm_agent2 = ChatOpenAI(
+        model=LLM_MODEL,
+        temperature=0.0
+    )
 
 # ==========================================
 # 5. CORE RAG LOGIC

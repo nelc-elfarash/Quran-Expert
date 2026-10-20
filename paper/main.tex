@@ -1,0 +1,136 @@
+\documentclass[conference]{IEEEtran}
+
+% Some very useful LaTeX packages include:
+% (uncomment the ones you want to load)
+
+% *** SPECIALIZED LIST PACKAGES ***
+\usepackage{algorithmic}
+
+% *** ALIGNMENT PACKAGES ***
+\usepackage{array}
+
+% *** SUBFig PACKAGES ***
+\ifCLASSOPTIONcompsoc
+ \usepackage[caption=false,font=normalsize,labelfont=sf,textfont=sf]{subfig}
+\else
+ \usepackage[caption=false,font=footnotesize]{subfig}
+\fi
+
+\usepackage{url}
+\hyphenation{op-tical net-works semi-conduc-tor}
+
+
+% ------ Spencer's Adds: -----------
+% HOW TO make a command ("tab" here)
+\newcommand\tab[1][0.4cm]{\hspace*{#1}}
+% This line makes the collumns on the last line even
+\usepackage{flushend}
+\usepackage{tabularx,booktabs,textcomp}
+\newcolumntype{C}{>{\centering\arraybackslash}X} 
+\newcolumntype{L}{>{\raggedright\arraybackslash}X} 
+\usepackage[noadjust]{cite}
+\renewcommand{\citepunct}{,\penalty\citepunctpenalty\,}
+\renewcommand{\citedash}{--}    % optionally
+\usepackage{wasysym}
+\usepackage{lipsum}
+\usepackage{graphicx}
+% ----------------------------------
+
+\begin{document}
+
+\title{Dual-Agent Architecture Question Answering System for Quranic Tafsir}
+
+\author
+{\IEEEauthorblockN{Mohamed Nasser}
+\IEEEauthorblockA{\textit{Faculty of Engineering, Cairo University} \\
+Cairo, Egypt \\
+Mohammad.elfarash@gmail.com}
+
+\and
+\IEEEauthorblockN{Dr. Ahmed Hamdy}
+\IEEEauthorblockA{\textit{Faculty of Engineering, Cairo University} \\
+Cairo, Egypt \\
+ahamdy@eng.cu.edu.eg}
+}
+
+% make the title area
+\maketitle
+
+\begin{abstract}
+It is very important to query the content of any information format whether it’s from structured or unstructured data and the question answering system can solve this problem. In this paper, we provide a simple but very effective method building a complete question answering system for highly sensitive Islamic texts by utilizing a Dual-Agent Retrieval-Augmented Generation (RAG) architecture. We achieve this by splitting the task between a Contextualizing Agent to extract exact verses, and a RAG Agent to formulate the answers grounded in authenticated scholarly interpretations. We will also provide a simple study analysis comparing our proposed RAG pipeline with traditional approaches like LLM fine-tuning, focusing on hallucination reduction. Natural language processing has made the computers behave like humans which helps people in many ways in our case it helps people get fast, strictly authenticated answers to questions lied in big Tafsir books without wasting time going through the whole book for example.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Question Answering, Natural Language Processing,
+Retrieval-Augmented Generation, Large Language Models
+\end{IEEEkeywords}
+
+\section{Introduction}
+Due to the huge increase in information storage and the popularity to share any article in any field on the web allow researchers to share information to the public. however, this huge amount of data makes finding the right information is very complex and time consuming. So, the difficulty of finding answers in big context motivated the researchers to invest time inventing research tools, such as question answering. Humans and computers interactions is very challenging task. Natural language processing aims to solve this task by developing programs which analysis the natural language (NL) and understand it. Question answering models’ outputs depend on the dataset it was trained on or in which cases you want to use the question answering system. For example, if you don’t have time to read enormous books of Tafsir (exegesis) and want to get fast answer to a question like “what is the meaning of this verse?”, it should output a robust, accurate paragraph from verified scholarly sources. The key motivation behind this survey is present to any researcher the state-of-the-art approaches in the question answering models utilizing RAG for Islamic texts. 
+
+In this article we provide a simple but very effective method building a complete question answering system by using a Dual-Agent architecture to process Quranic references. And also provide a complete study analysis over these approaches regarding which is most immune to hallucinations and which is more accurate. In this survey we group the state-of-the-art concepts which achieve the best robustness when dealing with highly sensitive religious texts. Some of these famous architectures and models we discuss are:
+
+\begin{itemize}
+\item Retrieval-Augmented Generation (RAG) for localized context.
+\item Dual-Agent systems separating context extraction from answer generation.
+\item Dense neural embeddings vs. Hybrid sparse retrievals.
+\end{itemize}
+
+In this paper we are using OpenAI embeddings and ChromaDB for its remarkable performance in all natural language processing vector searches in general and specially in context extraction.
+
+\section{Related Work}
+In this section, we give a quick overview of some of the related work and the state-of-art question answering approaches using modern deep learning techniques for religious texts. First we start with the evolution of NLP applied to the Quran. Early computational approaches treating the Quran relied primarily on lexical search strategies or keyword mapping. With the popularization of Word2Vec and subsequent Transformer-derived contextualization models (e.g., BERT), research pivoted to capturing semantic nuances. However, standard encoder-only frameworks failed to act as conversational or generative reasoning systems, struggling with the high sensitivity of the domain.
+
+The second approach we present the standard Retrieval-Augmented Generation (RAG). RAG architectures merge a retrieve-and-read setup, retrieving pertinent passages sequentially from external knowledge bases preceding a generative pass by an overarching LLM. Recent studies have proved RAG highly impactful in eliminating LLM fabrications inside legal ecosystems where veracity surpasses creativity. For our highly sensitive theological domain, this localized implementation ensures outputs are constrained tightly by validated sources.
+
+Third, we present the challenge with singular RAG systems. If the Arabic transliteration or query is complex, a single agent model becomes confused, pulling marginally related verses rather than the directly requested segment. The architecture needs a straightforward fix, and it’s easy to implement our proposed Dual-Agent architecture to separate parsing from reasoning.
+
+\section{Methodology}
+In this section, we discuss our proposed Dual-Agent RAG system. There are mainly two agents working together to form our question answering system:
+
+\begin{itemize}
+  \item	Contextualizing Agent (Quran Expert)
+  \item RAG Agent (Tafsir Specialist)
+\end{itemize}
+
+The answers are associated to the specific verses asked. So, without further ado here’s the breakdown of the framework.
+
+\subsection{Contextualizing Agent}
+Most of the user queries are highly informal. They ask vague questions regarding verses. This agent parses incoming inputs specifically to execute entity extraction. By utilizing a highly parameterized model, it filters language dependencies to isolate explicitly cited or contextually referenced verses, outputting a formalized Surah and Ayah number pair.
+
+\subsection{RAG Agent}
+Unlike the contextualizing agent, the RAG Agent has restriction of a specific domain. Receiving the formalized verse indexes, it accesses the corresponding embeddings from the vector database. It consists of limited topics of specific answers that can be applied to the precise verse. Hence, the quality of answers is very high since the focus of the domain is strictly bounded by the retrieved text limits. The foundation of our contexts comes from the MohamedRashad/Quran-Tafseer dataset dynamically indexed via ChromaDB.
+
+\section{Discussion and Proposed Evaluation}
+Evaluating these architectures is one of the most challenging yet interesting problems in Natural Language Processing, because standard evaluation metrics (like Exact Match or F1) don't fully encapsulate the theological correctness required here. The reason behind the choice of using RAGAS (Retrieval Augmented Generation Assessment) is simple, it specifically addresses retrieval competence and generative competence independently.
+
+We provide a simple study analysis comparing three different techniques to handle this sensitive dataset: LLM Fine-Tuning, Standard RAG, and our Dual-Agent RAG.
+
+\begin{table}[ht] 
+\centering
+\caption{THE COMPLETE STUDY ANALYSIS OVER DIFFERENT ARCHITECTURES FOR SENSITIVE QURANIC QUERYING} % title of Table 
+\centering      % used for centering table 
+\begin{tabular}{l c c c}  % centered columns (3 columns) 
+\hline\hline                        %inserts double horizontal lines 
+Question Answering Approach & Faithfulness & Latency \\   
+%heading 
+\hline                
+LLM Fine-Tuning (e.g. Llama-3) & Low & Low \\
+Standard RAG Setup & Medium & Medium\\
+\textbf{Our Model (Dual-Agent RAG)} & \textbf{High} &\textbf{Medium}\\
+\hline    
+\end{tabular} 
+\end{table}
+
+As shown in table 1, our model greatly improves the Faithfulness (reduces hallucination) compared to simple fine-tuning. Fine-tuning is notoriously susceptible to knowledge degradation over massive contexts, failing explicitly to isolate its sources reliably upon querying. Standard RAG performs okay but fails when questions encompass scattered unstructured verses. Our Dual-Agent model is the best model for question answering problem at the current timing for this sensitive domain.
+
+\section{Conclusion and Future work}
+In this paper we have built a question answering system by utilizing a Dual-Agent RAG architecture which drastically minimizes language model hallucination risks in highly-sensitive theological domains by separating context parsing from generative response formulation. Our model is highly immune to hallucination compared to standard LLM fine-tuning techniques. However, that requires some future work to try to make the model a little bit more faster and able to handle hybrid searches. Also, we want to add the ability to use sparse lexical vector searches in conjunction with our dense neural embeddings. We are planning to incorporate classical BM25 searches in parallel with dense vector searches linearly interpolated. Also, in this article we presented a simple study analysis comparing different well-known architectures tested qualitatively on sensitive datasets.
+
+%------- CITATIONS ----------
+\nocite{}
+\bibliography{references}
+\bibliographystyle{IEEEtran}
+
+% that's all folks
+\end{document}

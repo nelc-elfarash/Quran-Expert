@@ -52,9 +52,22 @@ To launch the RESTful backend endpoints (great for frontend/mobile app integrati
 ```bash
 conda activate quran_llm
 cd src
-uvicorn quran_api:app --reload --host 0.0.0.0 --port 8000
+uvicorn quran_api:app --reload --host 0.0.0.0 --port 8006
 ```
-> Explore the interactive API documentation at `http://127.0.0.1:8000/docs`.
+> Explore the interactive API documentation at `http://127.0.0.1:8006/docs`.
 
 ### Missing Vector Store Fallback (Ingestion from Scratch)
 If you skip downloading the vector store from Google Drive, the first time you run the application it will dynamically authenticate with HuggingFace, download the `MohamedRashad/Quran-Tafseer` dataset, convert all verses and interpretations using OpenAI's `text-embedding-3-small` model, and build the persistent ChromaDB index locally. **This will take time and incur OpenAI API costs**. Once complete, the vector index will be saved to `./vector_store/chromadb_quran_tafsir` for instant startup on future executions.
+
+### Option 3: Docker
+Both the Gradio UI and the FastAPI backend can be run in containers via Docker Compose. Ports are read from `.env` (`PORT` for the API, `GRADIO_PORT` for the UI — see `.env.example`).
+
+```bash
+cp .env.example .env   # then fill in OPENAI_API_KEY
+docker compose up --build
+```
+
+- API: `http://localhost:${PORT}` (docs at `/docs`)
+- UI: `http://localhost:${GRADIO_PORT}`
+
+`./vector_store` and `./logs` are bind-mounted so the ChromaDB index and request logs persist across container restarts. To run just one service: `docker compose up --build api` or `docker compose up --build ui`.

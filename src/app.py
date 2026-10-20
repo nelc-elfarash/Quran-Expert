@@ -1,5 +1,10 @@
+import os
+
 import gradio as gr
+from dotenv import load_dotenv
 from quran_rag_agent import process_query
+
+load_dotenv()
 
 last_retrieved_chunks = []
 
@@ -58,4 +63,8 @@ with gr.Blocks(title="المساعد القرآني الذكي (AI Quran Expert)
     refresh_btn.click(get_retrieved_chunks, outputs=sources_display)
 
 if __name__ == "__main__":
-    demo.launch(share=True)
+    demo.launch(
+        server_name="0.0.0.0",
+        server_port=int(os.environ.get("GRADIO_PORT", 7860)),
+        share=os.environ.get("GRADIO_SHARE", "false").lower() == "true",
+    )
